@@ -1,6 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User, AbstractBaseUser, BaseUserManager
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
 import uuid
+
+from .tokens import accounts_activation_token
 
 # Create your models here.
 class MyAccountManager(BaseUserManager):
@@ -65,16 +69,16 @@ class Account(AbstractBaseUser):
     def has_module_perms(self, app_label):
         return True
 
-    # @classmethod
-    # def get_activate_url(cls, request, user):
-    #     site = "bitwatch.net"
-    #     uid = urlsafe_base64_encode(force_bytes(user.pk))
-    #     token = accounts_activation_token.make_token(user)
-    #     return f"{site}/api/account/activate/{uid}/{token}"
+    @classmethod
+    def get_activate_url(cls, request, user):
+        site = request.get_host()
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = accounts_activation_token.make_token(user)
+        return f"http://127.0.0.1:3000/activate?uid={uid}&token={token}"
     
-    # @classmethod
-    # def get_password_reset_url(cls, request, user):
-    #     site = "bitwatch.net"
-    #     uid = urlsafe_base64_encode(force_bytes(user.pk))
-    #     token = accounts_activation_token.make_token(user)
-    #     return f"{site}/resetpassword?uid={uid}&token={token}"
+    @classmethod
+    def get_password_reset_url(cls, request, user):
+        site = request.get_host()
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = accounts_activation_token.make_token(user)
+        return f"http://{site}/resetpassword?uid={uid}&token={token}"
