@@ -55,8 +55,9 @@ class Login(APIView):
             
             login(request, account)
 
+            data = UserSerializer(account).data
 
-            return Response(status=status.HTTP_200_OK)
+            return Response(data, status=status.HTTP_200_OK)
 
 class Activate(APIView):
 
