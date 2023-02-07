@@ -8,7 +8,7 @@ from django.utils.encoding import force_str
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 
-from .serializers import LoginSerializer, RegisterAccountSerializer
+from .serializers import LoginSerializer, RegisterAccountSerializer, UserSerializer
 from .models import Account
 from .tokens import accounts_activation_token
 
@@ -54,6 +54,7 @@ class Login(APIView):
                 return Response({"Invalid Credentials": "Could not authenticate user"}, status=status.HTTP_404_NOT_FOUND)
             
             login(request, account)
+
 
             return Response(status=status.HTTP_200_OK)
 

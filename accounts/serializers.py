@@ -11,3 +11,13 @@ class RegisterAccountSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField()
     password = serializers.CharField()
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = (
+            "id",
+            "email",
+            "username",
+            # "theme",
+        )
