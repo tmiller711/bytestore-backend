@@ -7,7 +7,11 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from rest_framework import authentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .serializers import LoginSerializer, RegisterAccountSerializer, UserSerializer
 from .models import Account
@@ -55,11 +59,11 @@ class Login(APIView):
                 return Response({"Invalid Credentials": "Could not authenticate user"}, status=status.HTTP_404_NOT_FOUND)
             
             login(request, account)
-            refresh = RefreshToken.for_user(account)
-            jwt_token = str(refresh.access_token)
+            # token = AccessToken.for_user(account)
+            # jwt_token = str(token.access_token)
 
             data = UserSerializer(account).data
-            data['jwt_token'] = jwt_token
+            # data['jwt_token'] = jwt_token
 
             return Response(data, status=status.HTTP_200_OK)
 
@@ -84,11 +88,31 @@ class Activate(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 class Logout(APIView):
+    authentication_classes = [JWTAuthentication]
 
     def get(self, request):
         try:
-            print(request.user)
             # logout(request)
-            return Response(stauts=status.HTTP_200_OK)
+            authorization_header = request.headers.get("Authorization")
+            bearer, token = authorization_header.split(" ")
+            token = AccessToken(token)
+            token.blacklist()
+            print("test")
+            return Response(status=status.HTTP_200_OK)
         except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims
+        token['email'] = user.email
+        token['username'] = user.username
+
+        return token
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
