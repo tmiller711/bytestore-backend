@@ -2,11 +2,12 @@ from django.shortcuts import render, redirect
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth import authenticate, login, get_user_model
+from django.contrib.auth import authenticate, login, get_user_model, logout
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializers import LoginSerializer, RegisterAccountSerializer, UserSerializer
 from .models import Account
@@ -54,8 +55,11 @@ class Login(APIView):
                 return Response({"Invalid Credentials": "Could not authenticate user"}, status=status.HTTP_404_NOT_FOUND)
             
             login(request, account)
+            refresh = RefreshToken.for_user(account)
+            jwt_token = str(refresh.access_token)
 
             data = UserSerializer(account).data
+            data['jwt_token'] = jwt_token
 
             return Response(data, status=status.HTTP_200_OK)
 
@@ -77,4 +81,14 @@ class Activate(APIView):
             
         else:
             # alert the user of bad activation link
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+class Logout(APIView):
+
+    def get(self, request):
+        try:
+            print(request.user)
+            # logout(request)
+            return Response(stauts=status.HTTP_200_OK)
+        except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
