@@ -33,14 +33,18 @@ class Register(APIView):
             account.set_password(password)
             account.save()
 
-            # url = Account.get_activate_url(request, account)
-            # message = render_to_string("template_activate_account.html", {
-            #     "url": url
-            # })
-            # mail_subject = "Activate Your Account"
-            # email = EmailMessage(mail_subject, message, to=[email])
-            # email.send()
-            # # send_email_task.delay(mail_subject, message, email)
+            url = Account.get_activate_url(request, account)
+            message = render_to_string("template_activate_account.html", {
+                "url": url
+            })
+            mail_subject = "Activate Your Account"
+            email = EmailMessage(mail_subject, message, to=[email])
+
+            try:
+                email.send()
+            except:
+                return Response({"error": "failed to send email"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            # send_email_task.delay(mail_subject, message, email)
 
             return Response({"success": "Please confirm your email address"}, status=status.HTTP_201_CREATED)
 
