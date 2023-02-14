@@ -12,6 +12,7 @@ from rest_framework import authentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
+from django.db import IntegrityError
 
 from .serializers import LoginSerializer, RegisterAccountSerializer, UserSerializer
 from .models import Account
@@ -32,40 +33,18 @@ class Register(APIView):
             account.set_password(password)
             account.save()
 
-            url = Account.get_activate_url(request, account)
-            message = render_to_string("template_activate_account.html", {
-                "url": url
-            })
-            mail_subject = "Activate Your Account"
-            email = EmailMessage(mail_subject, message, to=[email])
-            email.send()
-            # send_email_task.delay(mail_subject, message, email)
+            # url = Account.get_activate_url(request, account)
+            # message = render_to_string("template_activate_account.html", {
+            #     "url": url
+            # })
+            # mail_subject = "Activate Your Account"
+            # email = EmailMessage(mail_subject, message, to=[email])
+            # email.send()
+            # # send_email_task.delay(mail_subject, message, email)
 
             return Response({"success": "Please confirm your email address"}, status=status.HTTP_201_CREATED)
 
-        return Response({'Bad Request': "Invalid Data..."}, status=status.HTTP_400_BAD_REQUEST)
-
-class Login(APIView):
-    serializer_class = LoginSerializer
-
-    def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            email = serializer.data.get('email')
-            password = serializer.data.get('password')
-
-            account = authenticate(request, email=email, password=password)
-            if account == None:
-                return Response({"Invalid Credentials": "Could not authenticate user"}, status=status.HTTP_404_NOT_FOUND)
-            
-            login(request, account)
-            # token = AccessToken.for_user(account)
-            # jwt_token = str(token.access_token)
-
-            data = UserSerializer(account).data
-            # data['jwt_token'] = jwt_token
-
-            return Response(data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class Activate(APIView):
 
