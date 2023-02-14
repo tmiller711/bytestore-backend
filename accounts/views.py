@@ -42,9 +42,10 @@ class Register(APIView):
 
             try:
                 email_message.send()
-            except:
+            except Exception as e:
+                print(e)
                 account.delete()
-                return Response({"error": f"failed to send email to '{email}'"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response({"error": f"failed to send email to '{email}'. Try again later"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             # send_email_task.delay(mail_subject, message, email)
 
             return Response({"success": "Please confirm your email address"}, status=status.HTTP_201_CREATED)
