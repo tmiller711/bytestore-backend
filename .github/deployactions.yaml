@@ -1,0 +1,24 @@
+name: ByteStore Tests
+
+on:
+  push:
+    branches:
+      - development
+      - main
+  pull_request:
+    branches:
+      - development
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      EMAIL_HOST_PASS: ${{ secrets.EMAIL_HOST_PASS }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+      - run: pip install -r requirements.txt
+      - run: python manage.py test
