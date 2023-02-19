@@ -13,6 +13,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.db import IntegrityError
+from django.contrib.auth.models import User
 
 from .serializers import LoginSerializer, RegisterAccountSerializer, UserSerializer
 from .models import Account
@@ -29,9 +30,7 @@ class Register(APIView):
             username = serializer.data.get('username')
             password = serializer.data.get('password')
 
-            account = Account(email=email, username=username)
-            account.set_password(password)
-            account.save()
+            account = Account.objects.create_user(username=username, email=email, password=password)
 
             url = Account.get_activate_url(request, account)
             message = render_to_string("template_activate_account.html", {
@@ -94,6 +93,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         # Add custom claims
         token['email'] = user.email
         token['username'] = user.username
+        token['tier'] = user.tier
 
         return token
 

@@ -3,6 +3,8 @@ from django.contrib.auth.models import User, AbstractBaseUser, BaseUserManager
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 import uuid
+from django.conf import settings
+import os
 
 from .tokens import accounts_activation_token
 
@@ -21,6 +23,7 @@ class MyAccountManager(BaseUserManager):
 
         user.set_password(password)
         user.save(using=self._db)
+        user.create_media_folder()
         return user
 
     def create_superuser(self, email, username, password):
@@ -34,6 +37,7 @@ class MyAccountManager(BaseUserManager):
         user.is_active = True
         user.is_superuser = True
         user.save(using=self._db)
+        user.create_media_folder()
         return user
 
 
@@ -44,6 +48,7 @@ class Account(AbstractBaseUser):
     username = models.CharField(max_length=30, unique=True)
     name = models.CharField(max_length=100, blank=True)
     phone = models.CharField(max_length=30, blank=True)
+    tier = models.IntegerField(default=0)
     # theme = models.CharField(max_length=30, default="light")
     # profile_pic = models.ImageField(null=True, blank=True, default="images/default.png", upload_to=upload_path)
 
@@ -82,3 +87,13 @@ class Account(AbstractBaseUser):
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = accounts_activation_token.make_token(user)
         return f"http://{site}/resetpassword?uid={uid}&token={token}"
+
+    def create_media_folder(self):
+        """
+        Creates a new folder for the user's media files using the user's ID or username.
+        """
+        folder_name = str(self.id)
+        self.folder_name = folder_name
+        # Create folder in media directory
+        media_dir = os.path.join(settings.MEDIA_ROOT, folder_name)
+        os.makedirs(media_dir, exist_ok=True)
