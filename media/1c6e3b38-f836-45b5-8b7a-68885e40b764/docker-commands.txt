@@ -1,9 +1,0 @@
-docker run --name bitwatch -p 80:80 -p 443:443 -e AWS_KEY=AKIAZ4BFWVPYGP3V5MZX -e AWS_SECRET=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 -d bitwatch
-
-docker build --build-arg AWS_KEY=AKIAZ4BFWVPYGP3V5MZX --build-arg AWS_SECRET=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 --build-arg CELERY_BROKER_URL=amqp://tristin:june302004@ec2-3-145-174-222.us-east-2.compute.amazonaws.com -t bitwatch .
-
-
-
-docker build --build-arg DJANGO_SECRET_KEY=lajhfiojaoifasdjfasofjapjsad -t stocktrackapp .
-
-docker run --name stocktrackapp -p 80:80 -p 443:443 -e DJANGO_SECRET_KEY=lajhfiojaoifasdjfasofjapjsad -d stocktrackapp
