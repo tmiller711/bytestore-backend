@@ -7,6 +7,8 @@ import os
 from django.conf import settings
 
 from .models import UploadedFile
+from .serializers import UploadedFileSerializer
+
 # Create your views here.
 class UploadView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -23,3 +25,12 @@ class UploadView(APIView):
         
         except:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class GetUploadedFiles(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        uploaded_files = UploadedFile.objects.filter(user=request.user)
+
+        uploaded_files = UploadedFileSerializer(uploaded_files, many=True).data
+        return Response(data=uploaded_files, status=status.HTTP_200_OK)

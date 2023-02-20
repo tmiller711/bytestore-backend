@@ -9,3 +9,5 @@ class UploadedFile(models.Model):
     file = models.FileField(upload_to=file_path)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+
+    # add a class method for getting the file download link
